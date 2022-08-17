@@ -13,7 +13,9 @@ $ pip install -r requirements.txt
 ## Usage
 ```shell
 $ ./htb-cli.py -h
-usage: htb-cli.py [-h] [-c CACHE] [-i] {challenge,machine} ...
+HTB CLI - version v0.1 | "Powered by the officially unofficial HTB API :D"
+author: @An00bRektn (an00brektn.github.io)
+usage: htb-cli.py [-h] [-c CACHE] [-v] {challenge,machine,vpn} ...
 
 Interact with HackTheBox from the command line.
 
@@ -21,25 +23,57 @@ optional arguments:
   -h, --help            show this help message and exit
   -c CACHE, --cache CACHE
                         Path to cached credentials (default: ~/.config/.htbcache)
-  -i, --input-creds     Use stdin to input credentials
+  -v, --verbose         increase output verbosity
 
 subcommands:
-  {challenge,machine}
+  {challenge,machine,vpn}
     challenge           Interact with challenges.
     machine             Interact with machines.
+    vpn                 Manage your VPN connection.
 ```
 
-### Subcommands
-```shell
-$ ./htb-cli.py challenge -h
-usage: htb-cli.py challenge [-h] -n NAME [-p PATH] [-s] [-f FLAG] [-d [10-100]]
+### Features
+- 🎯 Challenges
+  - 🗃️ Download challenge files
+  - 🚩 Submit flags
+  - 🐳 Spawn Docker instances
+- 🖥️ Machines
+  - ✔️ Spawn Machines, normally and Release Arena
+    - **Known Bug**: API to spawn a machine normally is a little wonky right now, trying to fix that
+  - 🚩 Submit flags
+- 📡 VPN
+  - 🌐 Switch Machine lab servers, Release Arena and normal
+  - 📝 Download your VPN config
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -n NAME, --name NAME  Name of the challenge, or the challenge ID.
-  -p PATH, --path PATH  Download challenge files to the specified path.
-  -s, --start-docker    Start Docker instance.
-  -f FLAG, --flag FLAG  Submit flag.
-  -d [10-100], --difficulty [10-100]
-                        Submit difficulty rating, 10-100.
-```
+### TODO List
+- [ ] Stop and/or restart docker instances
+- [ ] Stop and/or restart spawned machine (and fix normal machine spawn bug)
+- [ ] Improve aesthetics
+- [ ] Possibly change flags to feel more intuitive
+- [ ] Refactor and reformat code for better extensibility and to be used as PyPi package
+- [ ] Support 2FA/OTP
+
+## FAQ
+#### How are you doing?
+A bit tired, genuinely surprised I put all of this together in ~4-6 hours.
+
+#### What's this project do?
+You skipped the entire README just to ask me that? Disrespectful smh.
+
+#### Is this an official HTB project?
+Nope, but it would be kind of hype if it was or they hired me 👀
+
+#### Can I get [feature]?
+I mostly made this on a whim, and it's heavily dependent on another API (although I could make some custom requests to the API if I had the time to investigate). If you want to contribute your own feature, go ahead! Make a pull request. But don't make one of those cringe issues because you didn't bother reading the code at all, because that's cringe.
+
+#### Are my credentials secure when using this program?
+You can choose to cache your credentials, but obviously those do get stored on disk. They expire after a variable length of time, but consider that. You can also just not cache the credentials and just input your username and password everytime.
+
+#### Why does this code look so bad?
+Hey, that's mean, but that doesn't mean you're wrong. Also I worked on this at night leave me alone.
+
+#### What's your opinion on the current state of the world considering that the consequences of climate change only become more apparent everyday with limited proactiveness from the world's governments to try and take any action that isn't entirely concerned with the potential for reelection or retaining/gaining power?
+not based :( 
+
+## Disclaimer/Licensing
+This project is wholly unaffiliated with any part of HackTheBox and is under the MIT License for usage.
