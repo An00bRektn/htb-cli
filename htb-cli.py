@@ -104,9 +104,9 @@ class HTBCLI:
             self.password = getpass.getpass(recc + 'Password: ')
             try:
                 if cache_choice.lower() == 'y':
-                    HTBClient(email=self.username, password=self.password, cache=expanduser(self.args.cache))
+                    self.client = HTBClient(email=self.username, password=self.password, cache=expanduser(self.args.cache))
                 else:
-                    HTBClient(email=self.username, password=self.password)
+                    self.client = HTBClient(email=self.username, password=self.password)
             except Exception as e:
                 print(printError + f"We encountered an error: {e}")
                 print(info + "Exiting...")
