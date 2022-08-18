@@ -2,8 +2,12 @@
 import argparse
 import getpass
 import json
+
 from hackthebox import *
-from utils.colors import *
+from htbcli.connectors.challenge import ChallengeInterface
+from htbcli.connectors.machine import MachineInterface
+from htbcli.connectors.vpn import VpnInterface
+from htbcli.utils.colors import *
 from os.path import expanduser, isdir, isfile, exists
 from random import choice
 
@@ -51,20 +55,23 @@ def get_args():
 class HTBCLI:
     def __init__(self) -> None:
         self.args = get_args()
+        #print(f"[ DEBUG ] args={self.args}")
+
+        if self.args == argparse.Namespace(cache=None, subcommand=None, verbose=False):
+            print(recc + "Use the -h/--help flag for basic help information.")
+            exit()
+
         if self.args.verbose:
-            #print(f"[ DEBUG ] args={self.args}")
             self.print_args()
         self.subcommand = self.args.subcommand
         
-        if self.subcommand != 'vpn':
-            if self.args.name is not None:
-                if self.args.name.isdecimal():
-                    self.args.name = int(self.args.name)
-
-        self.cred_management()
+        if self.subcommand != 'vpn' and self.subcommand is not None:
+            if self.args.name.isdecimal():
+                self.args.name = int(self.args.name)
 
     def run(self):
         """Executes the specified subcommand"""
+        self.cred_management()
         if self.subcommand == 'challenge':
             self.challenge()
         elif self.subcommand == 'machine':
@@ -125,183 +132,63 @@ class HTBCLI:
                 print(printError + f"Couldn't authenticate: {e}")
                 print(info + "Exiting...")
                 exit()
+            except IsADirectoryError:
+                print(printError + "Specified cache file is a directory")
+                print(info + "Exiting...")
+                exit()
         
     def challenge(self):
         """Facilitates interactions with the challenges. TODO: Move to separate class/file"""
         # Attempt to access the challenge to return a Challenge object
-        print(info + f'Accessing challenge {self.args.name}...')
-        try:
-            chall = self.client.get_challenge(self.args.name)
-        except errors.NotFoundException:
-            print(printError + "Could not find challenge. Exiting...")
-            exit()
-        print(good + f"Challenge {chall.name} ({chall.category}) retrieved!")
-
+        chall = ChallengeInterface(self.client, self.args.name)
+        
         # If the user has specified they want to download the files, download the files
         if self.args.path is not None and chall.has_download:
-            path = expanduser(self.args.path)
-            print(info + f'Downloading challenge files to {path}')
-            try:
-                if exists(path) == False:
-                    chall.download(path)
-                    print(good + f"Download to {path} successful!")
-                elif isdir(path):
-                    chall.download(path.rstrip() + f'/{chall.name}.zip')
-                    print(good + f"Download to {path} successful!")
-                elif isfile(path):
-                    overwrite = input(important + "File specified already exists, do you want to overwrite it (y/n)? ")
-                    if overwrite.lower() == 'y':
-                        chall.download(path)
-                        print(good + f"Download to {path} successful!")
-                    else:
-                        print(info + "Skipping download...")
-                else:
-                    print(important + "Path specified is not a directory or file, skipping...")
-            except Exception as e:
-                print(printError + f"We encountered an error: {e}")
+            chall.download_chall_files(self.args.path)
 
         # Spawn docker assuming the challenge has docker
         if self.args.start_docker and chall.has_docker:
-            print(info + f'Starting Docker instance...')
-            try:
-                instance = chall.start()
-                print(good + f"Docker started @ {instance.ip}:{instance.port}")
-            except Exception as e:
-                print(printError + f"We encountered an error: {e}")
+            chall.spawn_docker()
 
         # submit flag and difficulty rating, both are required for a valid submission
         if self.args.flag is not None and self.args.difficulty is not None:
-            try:
-                print(info + f'Submitting flag...')
-                submission = chall.submit(self.args.flag, self.args.difficulty)
-                if submission:
-                    print(good + f"Congratulations! {chall.name} ({chall.category}, {chall.points} pts) has been solved!")
-            except errors.IncorrectFlagException:
-                print(printError + 'Incorrect flag!')
-            except Exception as e:
-                print(printError + f"We encountered an error: {e}")
+            chall.attempt_submission(self.args.flag, self.args.difficulty)
+
         elif (self.args.flag is None) != (self.args.difficulty is None):
             print(important + "You need a flag and a difficulty to submit!")
 
     def machine(self):
         """Facilitates interactions with the machines. TODO: Move to separate class/file"""
         # Pull down the machine object
-        print(info + f'Accessing machine {self.args.name}...')
-        try:
-            machine = self.client.get_machine(self.args.name)
-            name = machine.name
-        except errors.NotFoundException:
-            print(printError + "Could not find machine. Exiting...")
-            exit()
-
-        print(good + f"Machine {machine.name} ({machine.difficulty}) retrieved!")
+        machine = MachineInterface(self.client, self.args.name)
 
         # attempt to spawn the machine either normally or in release arena
         # TODO: Known Issue, after talking with clubby, found out that there
         #       may have been an API change that breaks the regular spawn :(.
         #       Need to check it out with burp or something.
         if self.args.spawn:
-            try:
-                if self.args.release_arena == True:
-                    print(info + f'Spawning {name} in Release Arena...')
-                    instance = machine.spawn(release_arena=True)
-                else:
-                    print(info + f'Spawning {name}...')
-                    instance = machine.spawn()
-                print(good + f"{name} started @ {instance.ip}")
-                print(f"  \\\\--> Server: {instance.server}")
-            except Exception as e:
-                print(printError + f"We encountered an error: {e}")
+            machine.spawn_machine(self.args.release_arena)
 
         # submit flag and difficulty rating, both are required for a valid submission
         if self.args.flag is not None and self.args.difficulty is not None:
-            try:
-                print(info + f'Submitting flag...')
-                submission = machine.submit(self.args.flag, self.args.difficulty)
-                print(good + submission)
-            except errors.IncorrectFlagException:
-                print(printError + 'Incorrect flag!')
-            except errors.UserAlreadySubmitted:
-                print(important + "You've already submitted the user flag!")
-            except errors.RootAlreadySubmitted:
-                print(important + "You've already submitted the root flag!")
-            except Exception as e:
-                print(printError + f"We encountered an error: {e}")
+            machine.attempt_submission(self.args.flag, self.args.difficulty)
         elif (self.args.flag is None) != (self.args.difficulty is None):
             print(important + "You need a flag and a difficulty to submit!")
 
     def vpn(self):
         """Manage VPN connections using specified flags."""
         ra = self.args.release_arena
-        vpn_servers = [v for v in self.client.get_all_vpn_servers(release_arena=ra)]
-        vpn_names = [v.friendly_name.lower() for v in vpn_servers]
+        vpn_interface = VpnInterface(self.client, self.args.switch, ra)
 
         # If the user specified a switch, try to switch to server
         # If the switch is specified but there's no server, open a menu
-        try:
-            if self.args.switch is not None and self.args.switch.lower() != "menu":
-                print(info + f"Finding {self.args.switch}...")
-                if self.args.switch.lower() in vpn_names:
-                    desired = vpn_servers[vpn_names.index(self.args.switch.lower())]
-                    print(info + f"Attempting to switch to {desired}...")
-                    desired.switch()
-                    print(good + "Switched!")
-                else:
-                    print(important + "Couldn't find server.")
-                    self.args.switch = 'menu'
-        except Exception as e:
-            print(printError + f"We encountered an error: {e}")
-
-        # menu stuffs
-        try:
-            if self.args.switch.lower() == 'menu':
-                print(info + "Bringing up options...")
-                for i,v in enumerate(vpn_servers):
-                    print(f"  {recc}{i} -> {v.friendly_name} (users: {v.current_clients})")
-                
-                selection = -1
-                while selection < 0 or selection >= len(vpn_names):
-                    selection = int(input(recc + 'Type the index of the server you want to switch to: '))
-
-                print(info + f"Selected {vpn_names[selection]}")
-                desired = vpn_servers[selection]
-                print(info + f"Attempting to switch to {desired}...")
-                desired.switch()
-                print(good + "Switched!")
-        except Exception as e:
-            print(printError + f"We encountered an error: {e}")
+        if self.args.switch is not None:
+            vpn_interface.switch_servers(self.args.switch)
 
         # Download the VPN file
         if self.args.download is not None:
-            try:
-                print(info + f'Accessing current VPN Server...')
-                server = self.client.get_current_vpn_server()
-                print(good + f'Server {server.friendly_name} found!')
-            except Exception as e:
-                print(printError + f"We encountered an error: {e}")
-                print(info + "Exiting...")
-                exit()
-
-            path = expanduser(self.args.download)
-            print(info + f'Downloading VPN file to {path}')
-            try:
-                if exists(path) == False:
-                    server.download(path, tcp=self.args.tcp)
-                    print(good + "Download successful!")
-                elif isdir(path):
-                    server.download(self.args.path.rstrip() + f'/{server.name}.ovpn', tcp=self.args.tcp)
-                    print(good + "Download successful!")
-                elif isfile(path):
-                    overwrite = input(important + "File specified already exists, do you want to overwrite it (y/n)? ")
-                    if overwrite.lower() == 'y':
-                        server.download(path)
-                        print(good + f"Download to {path} successful!")
-                    else:
-                        print(info + "Skipping download...")
-                else:
-                    print(important + "Path specified is not a directory or file, skipping...")
-            except Exception as e:
-                print(printError + f"We encountered an error: {e}")
+            vpn_interface.download_vpn(self.args.download, self.args.tcp)
+            
 
 if __name__ == "__main__":
     flavortext = [

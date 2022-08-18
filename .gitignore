@@ -3,3 +3,9 @@ __pycache__
 env
 venv
 .env
+**/*.pyc
+**/*.swp
+**/*.egg-info/
+dist/
+build/
+.idea/
