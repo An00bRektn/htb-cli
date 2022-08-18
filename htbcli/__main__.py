@@ -20,7 +20,10 @@ from random import choice
 
 def get_args():
     # Begin original commands - mostly related to authentication
-    parser = argparse.ArgumentParser(description="Interact with HackTheBox from the command line.")
+    parser = argparse.ArgumentParser(
+        description="Interact with HackTheBox from the command line.",
+        usage="htbcli [-h] [-c CACHE] [-v] {challenge,machine,vpn} ..."
+        )
     parser.add_argument('-c', '--cache', type=str, help='Path to cached credentials.')
     parser.add_argument('-v', '--verbose', action="store_true", help="increase output verbosity")
     subparsers = parser.add_subparsers(title='subcommands', dest='subcommand')
@@ -188,12 +191,11 @@ class HTBCLI:
         # Download the VPN file
         if self.args.download is not None:
             vpn_interface.download_vpn(self.args.download, self.args.tcp)
-            
 
-if __name__ == "__main__":
+def main():
     flavortext = [
         "Skill issue.",
-        "Old UI > New UI",
+        "Old UI > New UI > this UI",
         "New UI > Old UI?",
         "bin.",
         ":lemonthink:",
@@ -205,7 +207,7 @@ if __name__ == "__main__":
         "If you're using Windows, don't."
     ]
 
-    print(f'\033[92mHTB CLI - version v0.1 | "{choice(flavortext)}"\033[0m')
+    print(f'\033[92mhtbcli - version v0.1 | "{choice(flavortext)}"\033[0m')
     print('\033[35mauthor: @An00bRektn (an00brektn.github.io)\033[0m')
     h = HTBCLI()
     try:
@@ -215,3 +217,6 @@ if __name__ == "__main__":
     except errors.RateLimitException:
         print(important + "You might be making too many requests. " 
                         + "Please wait at least 30 seconds before issuing another command.")
+
+if __name__ == "__main__":
+    main()

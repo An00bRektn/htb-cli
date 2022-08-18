@@ -10,19 +10,30 @@ $ pip install -r requirements.txt
 ```
 *Maybe use a virtual environment? Don't ask me, it's your computer.*
 
+You can then build it locally from the repo directory
+```shell
+$ pip install .
+$ htbcli -h
+```
+
+Or you can just run it using python.
+```shell
+$ python -m htbcli -h
+```
+
 ## Usage
 ```shell
-$ ./htb-cli.py -h
-HTB CLI - version v0.1 | "Powered by the officially unofficial HTB API :D"
+$ htbcli -h
+htbcli - version v0.1 | "Powered by the officially unofficial HTB API :D"
 author: @An00bRektn (an00brektn.github.io)
-usage: htb-cli.py [-h] [-c CACHE] [-v] {challenge,machine,vpn} ...
+usage: htbcli [-h] [-c CACHE] [-v] {challenge,machine,vpn} ...
 
 Interact with HackTheBox from the command line.
 
 optional arguments:
   -h, --help            show this help message and exit
   -c CACHE, --cache CACHE
-                        Path to cached credentials (default: ~/.config/.htbcache)
+                        Path to cached credentials.
   -v, --verbose         increase output verbosity
 
 subcommands:
@@ -50,12 +61,12 @@ subcommands:
 - [ ] Stop and/or restart spawned machine (and fix normal machine spawn bug)
 - [ ] Improve aesthetics
 - [ ] Possibly change flags to feel more intuitive
-- [ ] Refactor and reformat code for better extensibility and to be used as PyPi package
+- [x] Refactor and reformat code for better extensibility and to be used as a module
 - [ ] Support 2FA/OTP
 
 ## FAQ
 #### How are you doing?
-A bit tired, genuinely surprised I put all of this together in ~4-6 hours.
+A bit tired, genuinely surprised I put the initial build together in ~4-6 hours.
 
 #### What's this project do?
 You skipped the entire README just to ask me that? Disrespectful smh.
@@ -74,6 +85,10 @@ Hey, that's mean, but that doesn't mean you're wrong. Also I worked on this at n
 
 #### What's your opinion on the current state of the world considering that the consequences of climate change only become more apparent everyday with limited proactiveness from the world's governments to try and take any action that isn't entirely concerned with the potential for reelection or retaining/gaining power?
 not based :( 
+
+## Acknowledgements
+- This project is not as easy without clubby's [htb-api](https://github.com/clubby789/htb-api)
+- I only realized after making the first iteration that [calebstewart](https://github.com/calebstewart/python-htb) already did this, but it hasn't been updated since 2020 (that was 2 years ago???) so who cares it's open source. I definitely did copy the setup.py stuff from him :)
 
 ## Disclaimer/Licensing
 This project is wholly unaffiliated with any part of HackTheBox and is under the MIT License for usage.
