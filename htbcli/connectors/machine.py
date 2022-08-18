@@ -48,3 +48,33 @@ class MachineInterface:
             print(important + "You've already submitted the root flag!")
         except Exception as e:
             print(printError + f"We encountered an error: {e}")
+
+    def stop_instance(self):
+        instance = self.client.get_active_machine()
+        if instance is None:
+            print(printError + "No assigned machine detected! Exiting...")
+            exit()
+        if instance is not None:
+            try:
+                print(info + f"Stopping {instance.machine.name} ({instance.ip})...")
+                instance.stop()
+                if self.client.get_active_machine() is not None:
+                    request = self.client.do_request(f'machine/stop', post=True)
+            except Exception as e:
+                print(printError + f"We encountered an error: {e}")
+
+    def reset_instance(self):
+        instance = self.client.get_active_machine()
+        if instance is None:
+            print(printError + "No assigned machine detected! Exiting...")
+            exit()
+        try:
+            print(info + f"Attempting to reset {instance.machine.name} ({instance.ip})")
+            attempt = instance.reset()
+            if attempt:
+                print(good + "Reset message sent! You might want to wait 1 to 5 minutes before hacking again, or just check the actual website for the current status.")
+        except TooManyResetAttempts:
+            print(printError + "Too many reset machine attempts. Try again later!")
+        except Exception as e:
+            print(printError + f"We encountered an error: {e}")
+        

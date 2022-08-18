@@ -65,3 +65,11 @@ class ChallengeInterface:
             print(printError + 'Incorrect flag!')
         except Exception as e:
             print(printError + f"We encountered an error: {e}")
+
+    def stop_instance(self):
+        try:
+            print(info + f'Stopping {self.chall.name}...')
+            docker = challenge.DockerInstance('', '', self.chall.id, self.client)
+            docker.stop()
+        except Exception as e:
+            print(printError + f"We encountered an error: {e}")

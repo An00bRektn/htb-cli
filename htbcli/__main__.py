@@ -12,9 +12,7 @@ from os.path import expanduser, isdir, isfile, exists
 from random import choice
 
 # TODO: Fortresses, Endgames, maybe HBG? (don't even know if I can physically test endgames because skill issue)
-# TODO: Add option to stop and/or reset container/machine. Not entirely sure 
-#       how to accomplish this when we lose the handle after execution but we'll
-#       see
+# TODO: Add option to see/search for info about challenges and machines on the platform
 # TODO: Improve aesthetics of verbosity and just everything overall
 # TODO: Consider changing flags to be more intuitive
 
@@ -33,6 +31,8 @@ def get_args():
     parser_chall.add_argument('-n', '--name', required=True, help='Name of the challenge, or the challenge ID.')
     parser_chall.add_argument('-p', '--path', type=str, help='Download challenge files to the specified path.', default=None)
     parser_chall.add_argument('-s', '--start-docker', action="store_true", help='Start Docker instance.')
+    parser_chall.add_argument('--stop', action="store_true", help='Stop challenge instance.')
+    parser_chall.add_argument('-r', '--reset', action="store_true", help='Stop and then start challenge instance.')
     parser_chall.add_argument('-f', '--flag', type=str, help='Submit flag.')
     parser_chall.add_argument('-d', '--difficulty', type=int, choices=range(10,101), metavar="[10-100]", help='Submit difficulty rating, 10-100.')
 
@@ -41,6 +41,8 @@ def get_args():
     parser_mach.add_argument('-n', '--name', required=True, help='Name of the machine, or the machine ID.')
     parser_mach.add_argument('-s', '--spawn', action="store_true", help='Spawn machine.')
     parser_mach.add_argument('--release-arena', action="store_true", help='Spawn machine in release arena.')
+    parser_mach.add_argument('--stop', action="store_true", help='Stop currently assigned machine.')
+    parser_mach.add_argument('-r', '--reset', action="store_true", help='Attempt to reset currently assigned machine')
     parser_mach.add_argument('-f', '--flag', type=str, help='Submit flag.')
     parser_mach.add_argument('-d', '--difficulty', type=int, choices=range(10,101), metavar="[10-100]", help='Submit difficulty rating, 10-100.')
     
@@ -143,32 +145,36 @@ class HTBCLI:
     def challenge(self):
         """Facilitates interactions with the challenges. TODO: Move to separate class/file"""
         # Attempt to access the challenge to return a Challenge object
-        chall = ChallengeInterface(self.client, self.args.name)
+        chall_interface = ChallengeInterface(self.client, self.args.name)
         
         # If the user has specified they want to download the files, download the files
-        if self.args.path is not None and chall.has_download:
-            chall.download_chall_files(self.args.path)
+        if self.args.path is not None and chall_interface.chall.has_download:
+            chall_interface.download_chall_files(self.args.path)
 
         # Spawn docker assuming the challenge has docker
-        if self.args.start_docker and chall.has_docker:
-            chall.spawn_docker()
+        if self.args.start_docker and chall_interface.chall.has_docker:
+            chall_interface.spawn_docker()
+
+        if self.args.stop and chall_interface.chall.has_docker:
+            chall_interface.stop_instance()
+
+        if self.args.reset and chall_interface.chall.has_docker:
+            chall_interface.stop_instance()
+            chall_interface.spawn_docker()
 
         # submit flag and difficulty rating, both are required for a valid submission
         if self.args.flag is not None and self.args.difficulty is not None:
-            chall.attempt_submission(self.args.flag, self.args.difficulty)
-
+            chall_interface.attempt_submission(self.args.flag, self.args.difficulty)
         elif (self.args.flag is None) != (self.args.difficulty is None):
             print(important + "You need a flag and a difficulty to submit!")
 
+        
     def machine(self):
         """Facilitates interactions with the machines. TODO: Move to separate class/file"""
         # Pull down the machine object
         machine = MachineInterface(self.client, self.args.name)
 
         # attempt to spawn the machine either normally or in release arena
-        # TODO: Known Issue, after talking with clubby, found out that there
-        #       may have been an API change that breaks the regular spawn :(.
-        #       Need to check it out with burp or something.
         if self.args.spawn:
             machine.spawn_machine(self.args.release_arena)
 
@@ -177,6 +183,12 @@ class HTBCLI:
             machine.attempt_submission(self.args.flag, self.args.difficulty)
         elif (self.args.flag is None) != (self.args.difficulty is None):
             print(important + "You need a flag and a difficulty to submit!")
+
+        if self.args.stop:
+            machine.stop_instance()
+
+        if self.args.reset:
+            machine.reset_instance()
 
     def vpn(self):
         """Manage VPN connections using specified flags."""
