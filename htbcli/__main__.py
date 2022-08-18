@@ -8,12 +8,12 @@ from htbcli.connectors.challenge import ChallengeInterface
 from htbcli.connectors.machine import MachineInterface
 from htbcli.connectors.vpn import VpnInterface
 from htbcli.utils.colors import *
+from htbcli.utils.banner import BannerBuilder
 from os.path import expanduser, isdir, isfile, exists
 from random import choice
 
 # TODO: Fortresses, Endgames, maybe HBG? (don't even know if I can physically test endgames because skill issue)
 # TODO: Add option to see/search for info about challenges and machines on the platform
-# TODO: Improve aesthetics of verbosity and just everything overall
 # TODO: Consider changing flags to be more intuitive
 
 def get_args():
@@ -60,7 +60,7 @@ def get_args():
 class HTBCLI:
     def __init__(self) -> None:
         self.args = get_args()
-        #print(f"[ DEBUG ] args={self.args}")
+        # print(f"[ DEBUG ] args={self.args}")
 
         if self.args == argparse.Namespace(cache=None, subcommand=None, verbose=False):
             print(recc + "Use the -h/--help flag for basic help information.")
@@ -68,6 +68,7 @@ class HTBCLI:
 
         if self.args.verbose:
             self.print_args()
+
         self.subcommand = self.args.subcommand
         
         if self.subcommand != 'vpn' and self.subcommand is not None:
@@ -86,11 +87,8 @@ class HTBCLI:
 
     def print_args(self):
         """Print passed arguments to be more verbose"""
-        print('─'*50)
-        for key,value in vars(self.args).items():
-            if value is not None: 
-                print(f"{key+' '*(15-len(key))} │ {value}")
-        print('─'*50)
+        banner = BannerBuilder(self.args)
+        banner.build_banner()
 
     def cred_management(self):
         """Applies flags to authenticate with the API, either through input or caching."""
@@ -216,10 +214,15 @@ def main():
         "Powered by the officially unofficial HTB API :D",
         "Why do machines when you can just do challenges?",
         "Can I get a reset? No? Well alright then.",
-        "If you're using Windows, don't."
+        "If you're using Windows, don't.",
+        "Imagine doing web challenges :P",
+        "Where did the steg and osint go?",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA...",
+        "As always we start with a nmap, so dash C for...",
+        "szymex/xct/Jazz probably already blooded it"
     ]
 
-    print(f'\033[92mhtbcli - version v0.1 | "{choice(flavortext)}"\033[0m')
+    print(f'\n\033[92mhtbcli - version v0.2 | "{choice(flavortext)}"\033[0m')
     print('\033[35mauthor: @An00bRektn (an00brektn.github.io)\033[0m')
     h = HTBCLI()
     try:

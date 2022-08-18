@@ -1,4 +1,4 @@
-# htb-cli
+# htbcli
 > I never liked dragging and dropping into VBox anyway.
 
 A command line tool to interact with the [HackTheBox](https://hackthebox.com) platform, using clubby789's unofficial [htb-api](https://github.com/clubby789/htb-api).
@@ -24,7 +24,7 @@ $ python -m htbcli -h
 ## Usage
 ```shell
 $ htbcli -h
-htbcli - version v0.1 | "Powered by the officially unofficial HTB API :D"
+htbcli - version v0.2 | "Powered by the officially unofficial HTB API :D"
 author: @An00bRektn (an00brektn.github.io)
 usage: htbcli [-h] [-c CACHE] [-v] {challenge,machine,vpn} ...
 
@@ -47,19 +47,18 @@ subcommands:
 - 🎯 Challenges
   - 🗃️ Download challenge files
   - 🚩 Submit flags
-  - 🐳 Spawn Docker instances
+  - 🐳 Spawn, stop, and restart Docker instances
 - 🖥️ Machines
-  - ✔️ Spawn Machines, normally and Release Arena
-    - **Known Bug**: API to spawn a machine normally is a little wonky right now, trying to fix that
+  - ✔️ Spawn, stop, and reset Machines, normally and Release Arena
   - 🚩 Submit flags
 - 📡 VPN
   - 🌐 Switch Machine lab servers, Release Arena and normal
   - 📝 Download your VPN config
 
 ### TODO List
-- [ ] Stop and/or restart docker instances
-- [ ] Stop and/or restart spawned machine (and fix normal machine spawn bug)
-- [ ] Improve aesthetics
+- [x] Stop and/or restart docker instances
+- [x] Stop and/or restart spawned machine (and fix normal machine spawn bug)
+- [x] Improve aesthetics
 - [ ] Possibly change flags to feel more intuitive
 - [x] Refactor and reformat code for better extensibility and to be used as a module
 - [ ] Support 2FA/OTP

@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="htbcli",
-    version="0.1",
+    version="0.2",
     description="CLI Wrapper for HTB API",
     author="An00bRektn",
     url="https://github.com/An00bRektn/htb-cli",
