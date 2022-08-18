@@ -8,23 +8,27 @@ class MachineInterface:
         self.name = name
         print(info + f'Accessing machine {self.name}...')
         try:
-            machine = self.client.get_machine(self.name)
-            name = machine.name
+            self.machine = self.client.get_machine(self.name)
+            name = self.machine.name
         except errors.NotFoundException:
             print(printError + "Could not find machine. Exiting...")
             exit()
-        print(good + f"Machine {machine.name} ({machine.difficulty}) retrieved!")
+        print(good + f"Machine {self.machine.name} ({self.machine.os}, {self.machine.difficulty}) retrieved!")
 
     def spawn_machine(self, release_arena: bool):
         try:
             if release_arena:
                 print(info + f'Spawning {self.name} in Release Arena...')
-                instance = machine.spawn(release_arena=True)
+                instance = self.machine.spawn(release_arena=True)
             else:
                 print(info + f'Spawning {self.name}...')
-                instance = machine.spawn()
+                try:
+                    instance = self.machine.spawn()
+                except Exception as e:
+                    request = self.client.do_request(f'machine/play/{self.machine.id}', post=True)
+                    instance = self.client.get_active_machine()
             ip = instance.ip
-            print(good + f"{self.name} started @ {instance.ip}")
+            print(good + f"{self.machine.name} started @ {instance.ip}")
             print(f"  \\\\--> Server: {instance.server}")
         except Exception as e:
             ip = ''
@@ -34,7 +38,7 @@ class MachineInterface:
     def attempt_submission(self, flag: str, difficulty: int):
         try:
             print(info + f'Submitting flag...')
-            submission = machine.submit(flag, difficulty)
+            submission = self.machine.submit(flag, difficulty)
             print(good + submission)
         except errors.IncorrectFlagException:
             print(printError + 'Incorrect flag!')
