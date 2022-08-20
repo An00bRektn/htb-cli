@@ -82,7 +82,7 @@ You can choose to cache your credentials, but obviously those do get stored on d
 #### Why does this code look so bad?
 Hey, that's mean, but that doesn't mean you're wrong. Also I worked on this at night leave me alone.
 
-#### What's your opinion on the current state of the world considering that the consequences of climate change only become more apparent everyday with limited proactiveness from the world's governments to try and take any action that isn't entirely concerned with the potential for reelection or retaining/gaining power?
+#### What's your opinion on the current state of the world considering that the consequences of climate change only become more apparent everyday with limited proactiveness from the US government to try and take any action that isn't entirely concerned with the potential for reelection or retaining/gaining power?
 not based :( 
 
 ## Acknowledgements
